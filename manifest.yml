@@ -28,7 +28,7 @@ files:
 - file: index.md
   blob_sha: af6e88aea170b7c35f3f85e61713036afaf2110e
   size: 432
-  status: missing
+  status: current
   zh: zh/index.md
   paragraphs: 2
   updated_at: '2026-11-19'
@@ -84,7 +84,7 @@ files:
 - file: user_guide.md
   blob_sha: 5e935123ec7bddb840c46f7c7d81005de3f97d47
   size: 62568
-  status: missing
+  status: current
   zh: zh/user_guide.md
   paragraphs: 350
   updated_at: '2026-11-19'

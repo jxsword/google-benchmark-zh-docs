@@ -2,7 +2,7 @@
 upstream_file: user_guide.md
 upstream_commit: 88e2febd385d65ad3d43c9d7327d36f19f2727b4
 upstream_hash: 5e935123ec7bddb840c46f7c7d81005de3f97d47
-status: partial
+status: current
 generated_by: agent
 ---
 
@@ -1045,14 +1045,9 @@ BM_CalculatePi/threads:8      2255 ns       9943 ns      70936
 
 <a name="multithreaded-benchmarks"/>
 
-## Multithreaded Benchmarks
+## 多线程基准测试
 
-In a multithreaded test (benchmark invoked by multiple threads simultaneously),
-it is guaranteed that none of the threads will start until all have reached
-the start of the benchmark loop, and all will have finished before any thread
-exits the benchmark loop. (This behavior is also provided by the `KeepRunning()`
-API) As such, any global setup or teardown can be wrapped in a check against the thread
-index:
+在多线程测试中（多个线程同时调用基准测试），保证没有任何线程会在全部线程到达基准测试循环起点之前启动，且在任一线程退出基准测试循环之前全部线程都已结束。（`KeepRunning()` API 也提供该行为）因此，任何全局 setup 或 teardown 都可以包裹在对线程索引的检查中：
 
 ```c++
 static void BM_MultiThreaded(benchmark::State& state) {
@@ -1069,52 +1064,38 @@ static void BM_MultiThreaded(benchmark::State& state) {
 BENCHMARK(BM_MultiThreaded)->Threads(2);
 ```
 
-To run the benchmark across a range of thread counts, instead of `Threads`, use
-`ThreadRange`. This takes two parameters (`min_threads` and `max_threads`), and an
-optional geometric multiplier `mult` (defaulting to 2), and runs the benchmark once
-for values in the inclusive range. For example:
+要在一系列线程数上运行基准测试，用 `ThreadRange` 代替 `Threads`。它接受两个参数（`min_threads` 与 `max_threads`）和一个可选的几何乘数 `mult`（默认为 2），并对闭区间范围内的每个值各运行一次基准测试。例如：
 
 ```c++
 BENCHMARK(BM_MultiThreaded)->ThreadRange(1, 8);
 ```
 
-will run `BM_MultiThreaded` with thread counts 1, 2, 4, and 8, while:
+将以线程数 1、2、4、8 运行 `BM_MultiThreaded`，而：
 
 ```c++
 BENCHMARK(BM_MultiThreaded)->ThreadRange(1, 16, 4);
 ```
 
-will run `BM_MultiThreaded` with thread counts 1, 4, and 16.
+将以线程数 1、4、16 运行 `BM_MultiThreaded`。
 
-You can also use `DenseThreadRange(min_threads, max_threads, stride = 1)` to step
-by an arithmetic stride:
+也可以用 `DenseThreadRange(min_threads, max_threads, stride = 1)` 以等差步长遍历：
 
 ```c++
 BENCHMARK(BM_MultiThreaded)->DenseThreadRange(1, 4);
 ```
 
-If the benchmarked code itself uses threads and you want to compare it to
-single-threaded code, you may want to use real-time ("wallclock") measurements
-for latency comparisons:
+如果被测代码自身使用线程，而你想与单线程代码比较，可能需要用真实时间（“墙钟”）测量做延迟对比：
 
 ```c++
 BENCHMARK(BM_test)->Range(8, 8<<10)->UseRealTime();
 ```
 
-Without `UseRealTime`, CPU time is used by default.
+不指定 `UseRealTime` 时，默认使用 CPU 时间。
 
-### Manual Multithreaded Benchmarks
+### 手动多线程基准测试
 
-Google/benchmark uses `std::thread` as multithreading environment per default.
-If you want to use another multithreading environment (e.g. OpenMP), you can provide
-a factory function to your benchmark using the `ThreadRunner` function.
-The factory function takes the number of threads as argument and creates a custom class
-derived from `benchmark::ThreadRunnerBase`.
-This custom class must override the function
-`void RunThreads(const std::function<void(int)>& fn)`.
-`RunThreads` is called by the main thread and spawns the requested number of threads.
-Each spawned thread must call `fn(thread_index)`, where `thread_index` is its own
-thread index. Before `RunThreads` returns, all spawned threads must be joined.
+Google/benchmark 默认使用 `std::thread` 作为多线程环境。如果想使用其他多线程环境（例如 OpenMP），可以通过 `ThreadRunner` 函数为基准测试提供工厂函数。工厂函数接受线程数作为参数，并创建派生自 `benchmark::ThreadRunnerBase` 的自定义类。该自定义类必须重写 `void RunThreads(const std::function<void(int)>& fn)` 函数。`RunThreads` 由主线程调用，生成请求的线程数。每个被生成的线程必须调用 `fn(thread_index)`，其中 `thread_index` 是它自己的线程索引。在 `RunThreads` 返回之前，所有生成的线程必须被 join。
+
 ```c++
 class OpenMPThreadRunner : public benchmark::ThreadRunnerBase
 {
@@ -1138,19 +1119,14 @@ BENCHMARK(BM_MultiThreaded)
   })
   ->Threads(1)->Threads(2)->Threads(4);
 ```
-The above example creates a parallel OpenMP region before it enters `BM_MultiThreaded`.
-The actual benchmark code can remain the same and is therefore not tied to a specific
-thread runner. The measurement does not include the time for creating and joining the
-threads.
+
+上面的示例在进入 `BM_MultiThreaded` 之前创建并行 OpenMP 区域。实际的基准测试代码可以保持不变，因此不绑定到特定的线程运行器。测量不包含创建与 join 线程的时间。
 
 <a name="cpu-timers" />
 
-## CPU Timers
+## CPU 计时器
 
-By default, the CPU timer only measures the time spent by the main thread.
-If the benchmark itself uses threads internally, this measurement may not
-be what you are looking for. Instead, there is a way to measure the total
-CPU usage of the process, by all the threads.
+默认情况下，CPU 计时器只测量主线程花费的时间。如果基准测试自身在内部使用线程，该测量可能不是你想要的。有一种方法可以测量进程内所有线程的总 CPU 占用：
 
 ```c++
 void callee(int i);
@@ -1189,12 +1165,9 @@ BENCHMARK(BM_OpenMP)->Range(8, 8<<10)->MeasureProcessCPUTime();
 BENCHMARK(BM_OpenMP)->Range(8, 8<<10)->MeasureProcessCPUTime()->UseRealTime();
 ```
 
-### Controlling Timers
+### 控制计时器
 
-Normally, the entire duration of the work loop (`for (auto _ : state) {}`)
-is measured. But sometimes, it is necessary to do some work inside of
-that loop, every iteration, but without counting that time to the benchmark time.
-That is possible, although it is not recommended, since it has high overhead.
+通常，工作循环（`for (auto _ : state) {}`）的整个时长都会被测量。但有时需要在循环内每次迭代做一些工作，又不想把这段时间计入基准测试时间。这是可行的，但不推荐——开销很大。
 
 <!-- {% raw %} -->
 ```c++
@@ -1213,14 +1186,9 @@ BENCHMARK(BM_SetInsert_With_Timer_Control)->Ranges({{1<<10, 8<<10}, {128, 512}})
 ```
 <!-- {% endraw %} -->
 
-Note that you can only pause the timing if the timer is actually running,
-and likewise, you can only resume the timing only if the timer is paused.
-Such invalid pause/resume calls are diagnosed if the
-user code is built without `NDEBUG`.
+注意：只有计时器确实在运行时才能暂停计时；同样，只有计时器已暂停时才能恢复计时。若用户代码构建时未定义 `NDEBUG`，这类无效的暂停/恢复调用会被诊断。
 
-For convenience, a `ScopedPauseTiming` class is provided to manage pausing and
-resuming timers within a scope. This is less error-prone than manually calling
-`PauseTiming` and `ResumeTiming`.
+为方便起见，提供了 `ScopedPauseTiming` 类在作用域内管理计时器的暂停与恢复。这比手动调用 `PauseTiming` 与 `ResumeTiming` 更不容易出错。
 
 <!-- {% raw %} -->
 ```c++
@@ -1243,21 +1211,13 @@ BENCHMARK(BM_SetInsert_With_Scoped_Timer_Control)->Ranges({{1<<10, 8<<10}, {128,
 
 <a name="manual-timing" />
 
-## Manual Timing
+## 手动计时
 
-For benchmarking something for which neither CPU time nor real-time are
-correct or accurate enough, completely manual timing is supported using
-the `UseManualTime` function.
+对于 CPU 时间和真实时间都不够正确或不够精确的测量对象，支持使用 `UseManualTime` 函数进行完全手动计时。
 
-When `UseManualTime` is used, the benchmarked code must call
-`SetIterationTime` once per iteration of the benchmark loop to
-report the manually measured time.
+使用 `UseManualTime` 时，被测代码必须在基准测试循环的每次迭代中调用一次 `SetIterationTime`，报告手动测得的时间。
 
-An example use case for this is benchmarking GPU execution (e.g. OpenCL
-or CUDA kernels, OpenGL or Vulkan or Direct3D draw calls), which cannot
-be accurately measured using CPU time or real-time. Instead, they can be
-measured accurately using a dedicated API, and these measurement results
-can be reported back with `SetIterationTime`.
+一个典型用例是 GPU 执行的基准测试（例如 OpenCL 或 CUDA kernel、OpenGL/Vulkan/Direct3D 的 draw call），它们无法用 CPU 时间或真实时间准确测量。改用专用 API 则可以准确测量，测量结果可通过 `SetIterationTime` 回报。
 
 ```c++
 static void BM_ManualTiming(benchmark::State& state) {
@@ -1284,27 +1244,21 @@ BENCHMARK(BM_ManualTiming)->Range(1, 1<<17)->UseManualTime();
 
 <a name="setting-the-time-unit" />
 
-## Setting the Time Unit
+## 设置时间单位
 
-If a benchmark runs a few milliseconds it may be hard to visually compare the
-measured times, since the output data is given in nanoseconds per default. In
-order to manually set the time unit, you can specify it manually:
+如果基准测试运行几毫秒，由于输出数据默认以纳秒给出，测得的时间很难直观比较。要手动设置时间单位，可显式指定：
 
 ```c++
 BENCHMARK(BM_test)->Unit(benchmark::kMillisecond);
 ```
 
-Additionally the default time unit can be set globally with the
-`--benchmark_time_unit={ns|us|ms|s}` command line argument. The argument only
-affects benchmarks where the time unit is not set explicitly.
+此外，可以用 `--benchmark_time_unit={ns|us|ms|s}` 命令行参数全局设置默认时间单位。该参数只影响未显式设置时间单位的基准测试。
 
 <a name="preventing-optimization" />
 
-## Preventing Optimization
+## 防止优化
 
-To prevent a value or expression from being optimized away by the compiler
-the `benchmark::DoNotOptimize(...)` and `benchmark::ClobberMemory()`
-functions can be used.
+为防止值或表达式被编译器优化掉，可以使用 `benchmark::DoNotOptimize(...)` 与 `benchmark::ClobberMemory()` 函数。
 
 ```c++
 static void BM_test(benchmark::State& state) {
@@ -1317,14 +1271,9 @@ static void BM_test(benchmark::State& state) {
 }
 ```
 
-`DoNotOptimize(<expr>)` forces the  *result* of `<expr>` to be stored in either
-memory or a register. For GNU based compilers it acts as read/write barrier
-for global memory. More specifically it forces the compiler to flush pending
-writes to memory and reload any other values as necessary.
+`DoNotOptimize(<expr>)` 强制把 `<expr>` 的 *结果* 存入内存或寄存器。对 GNU 系编译器，它充当全局内存的读/写屏障。更具体地，它强制编译器把未决写入刷到内存，并按需重新加载其他值。
 
-Note that `DoNotOptimize(<expr>)` does not prevent optimizations on `<expr>`
-in any way. `<expr>` may even be removed entirely when the result is already
-known. For example:
+注意 `DoNotOptimize(<expr>)` 完全不会阻止对 `<expr>` 的优化。当结果已知时，`<expr>` 甚至可能被完全移除。例如：
 
 ```c++
   // Example 1: `<expr>` is removed entirely.
@@ -1338,10 +1287,7 @@ known. For example:
   // while (...) DoNotOptimize(__result__);
 ```
 
-Since that is not the behaviour the user intended,
-such problematic cases will result in a diagnostic
-at compile time. The correct approach, for an expression result,
-is to use an intermediate local variable:
+由于这不是用户想要的行为，这类问题场景会在编译期产生诊断。对表达式结果而言，正确做法是使用中间局部变量：
 
 ```c++
   // Avoid: may call the deprecated const-reference overload.
@@ -1354,12 +1300,7 @@ is to use an intermediate local variable:
   }
 ```
 
-The second tool for preventing optimizations is `ClobberMemory()`. In essence
-`ClobberMemory()` forces the compiler to perform all pending writes to global
-memory. Memory managed by block scope objects must be "escaped" using
-`DoNotOptimize(...)` before it can be clobbered. In the below example
-`ClobberMemory()` prevents the call to `v.push_back(42)` from being optimized
-away.
+第二个防止优化的工具是 `ClobberMemory()`。本质上 `ClobberMemory()` 强制编译器执行所有未决的全局内存写入。由块作用域对象管理的内存必须先用 `DoNotOptimize(...)` “逃逸”（escape），然后才能被 clobber。在下例中，`ClobberMemory()` 防止对 `v.push_back(42)` 的调用被优化掉。
 
 ```c++
 static void BM_vector_push_back(benchmark::State& state) {
@@ -1374,46 +1315,23 @@ static void BM_vector_push_back(benchmark::State& state) {
 }
 ```
 
-Note that `ClobberMemory()` is only available for GNU or MSVC based compilers.
+注意 `ClobberMemory()` 仅适用于 GNU 系或 MSVC 系编译器。
 
 <a name="reporting-statistics" />
 
-## Statistics: Reporting the Mean, Median and Standard Deviation / Coefficient of variation of Repeated Benchmarks
+## 统计：报告重复基准测试的均值、中位数与标准差 / 变异系数
 
-By default each benchmark is run once and that single result is reported.
-However benchmarks are often noisy and a single result may not be representative
-of the overall behavior. For this reason it's possible to repeatedly rerun the
-benchmark.
+默认每个基准测试只运行一次并报告该单一结果。但基准测试常常有噪声，单一结果未必能代表整体行为。因此可以重复多次运行基准测试。
 
-The number of runs of each benchmark is specified globally by the
-`--benchmark_repetitions` flag or on a per benchmark basis by calling
-`Repetitions` on the registered benchmark object. When a benchmark is run more
-than once the mean, median, standard deviation and coefficient of variation
-of the runs will be reported.
+每个基准测试的运行次数由 `--benchmark_repetitions` flag 全局指定，或通过对注册的基准测试对象调用 `Repetitions` 逐个指定。当基准测试运行不止一次时，将报告各次运行的均值、中位数、标准差与变异系数。
 
-Additionally the `--benchmark_report_aggregates_only={true|false}`,
-`--benchmark_display_aggregates_only={true|false}` flags or
-`ReportAggregatesOnly(bool)`, `DisplayAggregatesOnly(bool)` functions can be
-used to change how repeated tests are reported. By default the result of each
-repeated run is reported. When `report aggregates only` option is `true`,
-only the aggregates (i.e. mean, median, standard deviation and coefficient
-of variation, maybe complexity measurements if they were requested) of the runs
-is reported, to both the reporters - standard output (console), and the file.
-However when only the `display aggregates only` option is `true`,
-only the aggregates are displayed in the standard output, while the file
-output still contains everything.
-Calling `ReportAggregatesOnly(bool)` / `DisplayAggregatesOnly(bool)` on a
-registered benchmark object overrides the value of the appropriate flag for that
-benchmark.
+此外，`--benchmark_report_aggregates_only={true|false}`、`--benchmark_display_aggregates_only={true|false}` flag 或 `ReportAggregatesOnly(bool)`、`DisplayAggregatesOnly(bool)` 函数可用于更改重复测试的报告方式。默认报告每次重复运行的结果。当 `report aggregates only` 选项为 `true` 时，只向两种报告器——标准输出（console）与文件——报告运行的聚合值（即均值、中位数、标准差与变异系数，若请求了复杂度测量则还包括它们）。而当仅 `display aggregates only` 选项为 `true` 时，标准输出只显示聚合值，文件输出仍包含全部内容。在注册的基准测试对象上调用 `ReportAggregatesOnly(bool)` / `DisplayAggregatesOnly(bool)` 会覆盖该基准测试对应 flag 的值。
 
 <a name="custom-statistics" />
 
-## Custom Statistics
+## 自定义统计
 
-While having these aggregates is nice, this may not be enough for everyone.
-For example you may want to know what the largest observation is, e.g. because
-you have some real-time constraints. This is easy. The following code will
-specify a custom statistic to be calculated, defined by a lambda function.
+有这些聚合值固然好，但对所有人未必够用。例如你可能想知道最大观测值——比如有真实时间方面的约束时。这很简单。下面的代码指定一个自定义统计量，由 lambda 函数定义。
 
 ```c++
 void BM_spin_empty(benchmark::State& state) {
@@ -1432,8 +1350,7 @@ BENCHMARK(BM_spin_empty)
   ->Arg(512);
 ```
 
-While usually the statistics produce values in time units,
-you can also produce percentages:
+统计量通常产生时间单位的值，也可以产生百分比：
 
 ```c++
 void BM_spin_empty(benchmark::State& state) {
@@ -1454,57 +1371,38 @@ BENCHMARK(BM_spin_empty)
 
 <a name="memory-usage" />
 
-## Memory Usage
+## 内存用量
 
-It's often useful to also track memory usage for benchmarks, alongside CPU
-performance. For this reason, benchmark offers the `RegisterMemoryManager`
-method that allows a custom `MemoryManager` to be injected.
+除 CPU 性能之外，跟踪基准测试的内存用量也常常有用。为此，benchmark 提供了 `RegisterMemoryManager` 方法，允许注入自定义的 `MemoryManager`。
 
-If set, the `MemoryManager::Start` and `MemoryManager::Stop` methods will be
-called at the start and end of benchmark runs to allow user code to fill out
-a report on the number of allocations, bytes used, etc.
+设置后，`MemoryManager::Start` 与 `MemoryManager::Stop` 方法会在基准测试运行的开始与结束时被调用，让用户代码填写分配次数、所用字节数等报告。
 
-This data will then be reported alongside other performance data, currently
-only when using JSON output.
+这些数据随后会与其他性能数据一起报告——目前仅 JSON 输出支持。
 
 <a name="profiling" />
 
-## Profiling
+## 剖析
 
-It's often useful to also profile benchmarks in particular ways, in addition to
-CPU performance. For this reason, benchmark offers the `RegisterProfilerManager`
-method that allows a custom `ProfilerManager` to be injected.
+除 CPU 性能之外，以特定方式剖析基准测试也常常有用。为此，benchmark 提供了 `RegisterProfilerManager` 方法，允许注入自定义的 `ProfilerManager`。
 
-If set, the `ProfilerManager::AfterSetupStart` and
-`ProfilerManager::BeforeTeardownStop` methods will be called at the start and
-end of a separate benchmark run to allow user code to collect and report
-user-provided profile metrics.
+设置后，`ProfilerManager::AfterSetupStart` 与 `ProfilerManager::BeforeTeardownStop` 方法会在一次单独的基准测试运行的开始与结束时被调用，让用户代码收集并报告用户提供的剖析指标。
 
-If your profiler needs the current benchmark name or other run state, override
-`ProfilerManager::AfterSetupStartWithState(const State&)` and
-`ProfilerManager::BeforeTeardownStopWithState(const State&)`. The legacy
-no-argument hooks still work and remain the fallback.
+如果你的剖析器需要当前基准测试名称或其他运行状态，请重写 `ProfilerManager::AfterSetupStartWithState(const State&)` 与 `ProfilerManager::BeforeTeardownStopWithState(const State&)`。旧式无参钩子仍然可用，并作为后备。
 
-Output collected from this profiling run must be reported separately.
+该剖析运行收集的输出必须单独报告。
 
 <a name="using-register-benchmark" />
 
-## Using RegisterBenchmark(name, fn, args...)
+## 使用 RegisterBenchmark(name, fn, args...)
 
-The `RegisterBenchmark(name, func, args...)` function provides an alternative
-way to create and register benchmarks.
-`RegisterBenchmark(name, func, args...)` creates, registers, and returns a
-pointer to a new benchmark with the specified `name` that invokes
-`func(st, args...)` where `st` is a `benchmark::State` object.
+`RegisterBenchmark(name, func, args...)` 函数提供创建并注册基准测试的另一种方式。`RegisterBenchmark(name, func, args...)` 创建、注册并返回一个指针，指向新的基准测试，后者带指定的 `name` 并调用 `func(st, args...)`，其中 `st` 是一个 `benchmark::State` 对象。
 
-Unlike the `BENCHMARK` registration macros, which can only be used at the global
-scope, the `RegisterBenchmark` can be called anywhere. This allows for
-benchmark tests to be registered programmatically.
+`BENCHMARK` 注册宏只能在全局作用域使用；与之不同，`RegisterBenchmark` 可以在任何地方调用。这使得基准测试可以编程方式注册。
 
-Additionally `RegisterBenchmark` allows any callable object to be registered
-as a benchmark. Including capturing lambdas and function objects.
+此外 `RegisterBenchmark` 允许注册任何可调用对象为基准测试，包括捕获型 lambda 与函数对象。
 
-For Example:
+例如：
+
 ```c++
 auto BM_test = [](benchmark::State& st, auto Inputs) { /* ... */ };
 
@@ -1520,22 +1418,13 @@ int main(int argc, char** argv) {
 
 <a name="exiting-with-an-error" />
 
-## Exiting with an Error
+## 以错误退出
 
-When errors caused by external influences, such as file I/O and network
-communication, occur within a benchmark the
-`State::SkipWithError(const std::string& msg)` function can be used to skip that run
-of benchmark and report the error. Note that only future iterations of the
-`KeepRunning()` are skipped. For the ranged-for version of the benchmark loop
-Users must explicitly exit the loop, otherwise all iterations will be performed.
-Users may explicitly return to exit the benchmark immediately.
+当基准测试内部发生外部影响导致的错误（如文件 I/O 与网络通信）时，可用 `State::SkipWithError(const std::string& msg)` 函数跳过该次基准测试运行并报告错误。注意：只有 `KeepRunning()` 的后续迭代会被跳过；对基准测试循环的 ranged-for 版本，用户必须显式退出循环，否则所有迭代都会执行。用户也可以显式 return，立即退出基准测试。
 
-The `SkipWithError(...)` function may be used at any point within the benchmark,
-including before and after the benchmark loop. Moreover, if `SkipWithError(...)`
-has been used, it is not required to reach the benchmark loop and one may return
-from the benchmark function early.
+`SkipWithError(...)` 函数可在基准测试内的任何时点使用，包括基准测试循环之前与之后。而且，如果已用过 `SkipWithError(...)`，则不必到达基准测试循环，可以从基准测试函数提前返回。
 
-For example:
+例如：
 
 ```c++
 static void BM_test(benchmark::State& state) {
@@ -1572,10 +1461,9 @@ static void BM_test_ranged_fo(benchmark::State & state) {
 ```
 <a name="a-faster-keep-running-loop" />
 
-## A Faster KeepRunning Loop
+## 更快的 KeepRunning 循环
 
-A ranged-based for loop should be used in preference to
-the `KeepRunning` loop for running the benchmarks. For example:
+运行基准测试时，应优先使用基于范围的 for 循环，而非 `KeepRunning` 循环。例如：
 
 ```c++
 static void BM_Fast(benchmark::State &state) {
@@ -1586,12 +1474,9 @@ static void BM_Fast(benchmark::State &state) {
 BENCHMARK(BM_Fast);
 ```
 
-The reason the ranged-for loop is faster than using `KeepRunning`, is
-because `KeepRunning` requires a memory load and store of the iteration count
-ever iteration, whereas the ranged-for variant is able to keep the iteration count
-in a register.
+ranged-for 循环比 `KeepRunning` 快的原因在于：`KeepRunning` 每次迭代都要对迭代计数做一次内存加载与存储，而 ranged-for 变体能把迭代计数保持在寄存器中。
 
-For example, an empty inner loop of using the ranged-based for method looks like:
+例如，基于范围 for 方法的空内循环如下：
 
 ```asm
 # Loop Init
@@ -1605,7 +1490,7 @@ For example, an empty inner loop of using the ranged-based for method looks like
 .LoopEnd:
 ```
 
-Compared to an empty `KeepRunning` loop, which looks like:
+与之相比，空 `KeepRunning` 循环如下：
 
 ```asm
 .LoopHeader: # in Loop: Header=BB0_3 Depth=1
@@ -1625,22 +1510,19 @@ Compared to an empty `KeepRunning` loop, which looks like:
 .LoopEnd:
 ```
 
-Unless C++03 compatibility is required, the ranged-for variant of writing
-the benchmark loop should be preferred.
+除非需要 C++03 兼容，否则应优先使用 ranged-for 变体书写基准测试循环。
 
 <a name="disabling-cpu-frequency-scaling" />
 
-## Disabling CPU Frequency Scaling
+## 禁用 CPU 频率调节
 
-If you see this error:
+如果看到这个错误：
 
 ```
 ***WARNING*** CPU scaling is enabled, the benchmark real time measurements may
 be noisy and will incur extra overhead.
 ```
 
-you might want to disable the CPU frequency scaling while running the
-benchmark, as well as consider other ways to stabilize the performance of
-your system while benchmarking.
+你可能想在运行基准测试时禁用 CPU 频率调节，同时考虑其他让系统在基准测试期间保持稳定的办法。
 
-See [Reducing Variance](reducing_variance.md) for more information.
+更多信息参见[降低方差](reducing_variance.md)。
