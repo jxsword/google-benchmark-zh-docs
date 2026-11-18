@@ -43,3 +43,14 @@ def test_normalize_target_parent():
     assert vz.normalize_target("../README.md#x") == (
         "https://github.com/google/benchmark/blob/main/README.md#x")
     assert vz.normalize_target("user_guide.md") == "user_guide.md"
+
+
+def test_residue_strips_urls():
+    """链接续行的 URL 字母不得拉低 CJK 占比造成误报（P2-b 批次实测）。"""
+    run = [(1, "参见 LLVM 项目的[基准测试"),
+           (2, "技巧](https://llvm.org/docs/Benchmarking.html)）。")]
+    assert vz._residue_of_run(run) == []
+    # 真正的英文段落仍会被检出
+    en = [(1, "The benchmark library provides a comprehensive set of testing "
+              "utilities for measuring the performance of code snippets.")]
+    assert vz._residue_of_run(en) != []

@@ -28,6 +28,7 @@
 | aggregation | 聚合 | 聚集、汇总（表格语境） | |
 | command-line flag | 命令行 flag | 开关、命令行参数（flag 语境） | flag 一律不译 |
 | user guide | 用户指南 | 使用手册、用户手册 | 本项目《用户指南》 |
+| distribution | 发行版 | — | Linux distribution 正译；「发行版」含禁用子串「发行」（release 语境），扫描前先屏蔽 |
 | dependency | 依赖 | — | |
 | release | 发布 | 发行、发版 | |
 | thread | 线程 | — | 出现 157 次，全文高频 |

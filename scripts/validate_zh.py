@@ -157,6 +157,8 @@ def residue_warnings(body: str) -> List[str]:
 def _residue_of_run(paragraph: List[Tuple[int, str]]) -> List[str]:
     text = " ".join(line for _, line in paragraph)
     stripped = strip_code(text)
+    # 剥离 URL：链接续行的域名/路径字母会把合法中文行的 CJK 占比拉低造成误报
+    stripped = re.sub(r"https?://\S+", "", stripped)
     cjk = len(_CJK_RE.findall(stripped))
     ascii_letters = sum(ch.isascii() and ch.isalpha() for ch in stripped)
     if cjk + ascii_letters < 40:

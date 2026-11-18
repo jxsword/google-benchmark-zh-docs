@@ -63,7 +63,7 @@ files:
 - file: reducing_variance.md
   blob_sha: 6af53228d42c15d6810fbeaf1568cf15bfbd252b
   size: 9541
-  status: missing
+  status: current
   zh: zh/reducing_variance.md
   paragraphs: 54
   updated_at: '2026-11-19'
