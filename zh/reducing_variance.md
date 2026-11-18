@@ -72,7 +72,7 @@ setarch `uname -m` -R ./a_benchmark
 
 ## 降低基准测试中的方差
 
-[上文讨论](user_guide#disabling-cpu-frequency-scaling)的 Linux CPU 频率调节器并非基准测试中唯一的噪声来源。本节的建议以桌面机或服务器为前提；在移动设备上大多不适用，且主要的方差来源也不同——参见[降低 Android 上的方差](#reducing-variance-on-android)。方差的来源包括但不限于：
+[上文讨论](user_guide.md#disabling-cpu-frequency-scaling)的 Linux CPU 频率调节器并非基准测试中唯一的噪声来源。本节的建议以桌面机或服务器为前提；在移动设备上大多不适用，且主要的方差来源也不同——参见[降低 Android 上的方差](#reducing-variance-on-android)。方差的来源包括但不限于：
 
 1. 在多核机器上，并非所有 CPU/CPU 核心/CPU 线程都以相同速度运行，因此同一基准测试先后运行两次可能得到不同结果，取决于它运行在哪个 CPU 上。
 2. 运行于 CPU 上的调节特性（如 Intel Turbo Boost、AMD Turbo Core 与 Precision Boost）即使在使用 Linux "performance" 调节器时也可能临时改变 CPU 频率。
@@ -87,7 +87,7 @@ setarch `uname -m` -R ./a_benchmark
 
 一些在典型 Linux 工作站上较为容易且有效的降方差手段：
 
-1. 按[上文讨论](user_guide#disabling-cpu-frequency-scaling)使用 performance 调节器。
+1. 按[上文讨论](user_guide.md#disabling-cpu-frequency-scaling)使用 performance 调节器。
 2. 禁用处理器加速（boosting），方法如下：
    ```sh
    echo 0 | sudo tee /sys/devices/system/cpu/cpufreq/boost
@@ -117,7 +117,7 @@ setarch `uname -m` -R ./a_benchmark
 
 <a name="reducing-variance-on-android" />
 
-## 降低 Android 上的方差
+## 降低 Android 上的方差 {#reducing-variance-on-android}
 
 在 Android 上没有 `cpupower`，`scaling_governor` 通常对 `shell` 用户不可读也不可写，也没有可禁用 SMT 的 BIOS。以下操作均无需 root。
 

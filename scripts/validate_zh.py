@@ -119,10 +119,15 @@ def link_targets(tokens) -> List[str]:
 
 
 def normalize_target(target: str) -> str:
-    """source 目标归一：../ 前缀映射为上游 GitHub blob URL（与 fix_links 同规则）。"""
-    from fix_links import UPSTREAM_BLOB_URL, _PARENT_RE
+    """source 目标归一（与 fix_links 同规则）：
+    1. ../ 前缀 → 上游 GitHub blob URL；
+    2. 缺 .md 后缀的 page#anchor（zh 同名镜像存在该文件）→ 补 .md。"""
+    from fix_links import UPSTREAM_BLOB_URL, _PARENT_RE, ZH_DIR
     if _PARENT_RE.match(target):
         return f"{UPSTREAM_BLOB_URL}/{_PARENT_RE.sub('', target)}"
+    m2 = re.fullmatch(r"([A-Za-z0-9_\-]+)(#.+)", target)
+    if m2 and (ZH_DIR / f"{m2.group(1)}.md").exists():
+        return f"{m2.group(1)}.md{m2.group(2)}"
     return target
 
 

@@ -77,7 +77,7 @@ generated_by: agent
 [降低基准测试中的方差](reducing_variance.md)
 <a name="command-line-options" />
 
-## 命令行选项
+## 命令行选项 {#command-line-options}
 
 基准测试接受若干选项，既可以通过命令行接口传入，也可以在执行前设置环境变量。每一个 `--option_flag=<value>` 命令行 flag 都有对应的环境变量 `OPTION_FLAG=<value>`，环境变量在设置后作为默认值使用（命令行 flag 始终优先）。
 
@@ -281,7 +281,7 @@ $ ./benchmark -v
 
 <a name="output-formats" />
 
-## 输出格式
+## 输出格式 {#output-formats}
 
 本库支持多种输出格式。使用 `--benchmark_format=<console|json|csv>` flag（或设置 `BENCHMARK_FORMAT=<console|json|csv>` 环境变量）设置格式类型。`console` 是默认格式。
 
@@ -377,7 +377,7 @@ name,iterations,real_time,cpu_time,bytes_per_second,items_per_second,label
 
 <a name="output-files" />
 
-## 输出文件
+## 输出文件 {#output-files}
 
 使用 `--benchmark_out=<filename>` 选项把基准测试结果写入文件（或设置 `BENCHMARK_OUT`）。用 `--benchmark_out_format={json|console|csv}` 指定输出格式（或设置 `BENCHMARK_OUT_FORMAT={json|console|csv}`）。注意：'csv' 报告器已废弃，所保存的 `.csv` 文件[无法被 csv 解析器解析](https://github.com/google/benchmark/issues/794)。
 
@@ -385,7 +385,7 @@ name,iterations,real_time,cpu_time,bytes_per_second,items_per_second,label
 
 <a name="running-benchmarks" />
 
-## 运行基准测试
+## 运行基准测试 {#running-benchmarks}
 
 基准测试通过运行产出的可执行文件来执行。基准测试可执行文件默认接受若干选项，既可以通过命令行接口传入，也可以在执行前设置环境变量。每一个 `--option_flag=<value>` 命令行 flag 都有对应的环境变量 `OPTION_FLAG=<value>`，环境变量在设置后作为默认值使用（命令行 flag 始终优先）。运行基准测试时传入 `--help` flag 可获得 CLI 选项的完整列表。
 
@@ -395,7 +395,7 @@ name,iterations,real_time,cpu_time,bytes_per_second,items_per_second,label
 
 <a name="running-a-subset-of-benchmarks" />
 
-## 运行基准测试子集
+## 运行基准测试子集 {#running-a-subset-of-benchmarks}
 
 `--benchmark_filter=<regex>` 选项（或 `BENCHMARK_FILTER=<regex>` 环境变量）可用于只运行匹配指定 `<regex>` 的基准测试。例如：
 
@@ -417,13 +417,13 @@ BM_memcpy/32k       1834 ns       1837 ns     357143
 
 <a name="result-comparison" />
 
-## 结果比较
+## 结果比较 {#result-comparison}
 
 可以对基准测试结果进行比较，参见[附加工具文档](tools.md)。
 
 <a name="extra-context" />
 
-## 额外上下文
+## 额外上下文 {#extra-context}
 
 有时在结果前打印的内容中添加额外上下文很有用。默认情况下，这一节包含运行基准测试所用 CPU 的信息。如需添加更多上下文，可以使用 `benchmark_context` 命令行 flag：
 
@@ -447,7 +447,7 @@ BM_memcpy/32k       2181 ns       2185 ns     324074
 
 <a name="runtime-and-reporting-considerations" />
 
-## 运行与报告注意事项
+## 运行与报告注意事项 {#runtime-and-reporting-considerations}
 
 执行基准测试可执行文件时，每个基准测试函数串行运行。要运行多少次迭代是动态确定的：先运行基准测试若干次并测量耗时，以保证最终结果在统计上稳定。因此，较快的基准测试函数比较慢的函数运行更多次迭代，迭代次数也会随之报告。
 
@@ -477,7 +477,7 @@ $ ./run_benchmarks.x --benchmark_min_time=100x
 
 <a name="setup-teardown" />
 
-## Setup/Teardown
+## Setup/Teardown {#setupteardown}
 
 可以通过向 Setup/Teardown 传入回调，为每个基准测试执行全局 setup/teardown：
 
@@ -506,7 +506,7 @@ BENCHMARK(BM_func)->Arg(1)->Arg(3)->Threads(16)->Threads(32)->Setup(DoSetup)->Te
 
 <a name="passing-arguments" />
 
-## 传递参数
+## 传递参数 {#passing-arguments}
 
 有时一个 benchmark 族可以用单个例程实现：该例程接受一个额外参数，用于指定要运行该族中的哪个基准测试。例如，下面的代码定义了一个 benchmark 族，用于测量不同长度的 `memcpy()` 调用速度：
 
@@ -737,7 +737,7 @@ BENCHMARK(BM_StringCompare)->RangeMultiplier(2)
 
 <a name="custom-benchmark-name" />
 
-## 自定义基准测试名称
+## 自定义基准测试名称 {#custom-benchmark-name}
 
 可以按如下方式更改基准测试的名称：
 
@@ -749,7 +749,7 @@ BENCHMARK(BM_memcpy)->Name("memcpy")->RangeMultiplier(2)->Range(8, 8<<10);
 
 <a name="templated-benchmarks" />
 
-## 模板基准测试
+## 模板基准测试 {#templated-benchmarks}
 
 本示例产生并消费大小为 `sizeof(v)`、共 `range_x` 次的消息。它还会在无多道程序设计的情况下输出吞吐量。
 
@@ -810,7 +810,7 @@ BENCHMARK_TEMPLATE1_CAPTURE(BM_Sequential, WaitQueue<int>, Step1, 1)->Range(1<<0
 
 <a name="fixtures" />
 
-## Fixtures
+## Fixtures {#fixtures}
 
 fixture 测试的创建方式：先定义一个派生自 `::benchmark::Fixture` 的类型，然后用以下宏创建并注册测试：
 
@@ -922,7 +922,7 @@ BENCHMARK_TEMPLATE_INSTANTIATE_F(SizedFixture, Test, std::integral_constant<5>)-
 
 <a name="custom-counters" />
 
-## 自定义计数器
+## 自定义计数器 {#custom-counters}
 
 可以添加自定义名称的计数器。下面的示例会在其输出中添加 "Foo"、"Bar" 和 "Baz" 列：
 
@@ -1045,7 +1045,7 @@ BM_CalculatePi/threads:8      2255 ns       9943 ns      70936
 
 <a name="multithreaded-benchmarks"/>
 
-## 多线程基准测试
+## 多线程基准测试 {#multithreaded-benchmarks}
 
 在多线程测试中（多个线程同时调用基准测试），保证没有任何线程会在全部线程到达基准测试循环起点之前启动，且在任一线程退出基准测试循环之前全部线程都已结束。（`KeepRunning()` API 也提供该行为）因此，任何全局 setup 或 teardown 都可以包裹在对线程索引的检查中：
 
@@ -1124,7 +1124,7 @@ BENCHMARK(BM_MultiThreaded)
 
 <a name="cpu-timers" />
 
-## CPU 计时器
+## CPU 计时器 {#cpu-timers}
 
 默认情况下，CPU 计时器只测量主线程花费的时间。如果基准测试自身在内部使用线程，该测量可能不是你想要的。有一种方法可以测量进程内所有线程的总 CPU 占用：
 
@@ -1211,7 +1211,7 @@ BENCHMARK(BM_SetInsert_With_Scoped_Timer_Control)->Ranges({{1<<10, 8<<10}, {128,
 
 <a name="manual-timing" />
 
-## 手动计时
+## 手动计时 {#manual-timing}
 
 对于 CPU 时间和真实时间都不够正确或不够精确的测量对象，支持使用 `UseManualTime` 函数进行完全手动计时。
 
@@ -1244,7 +1244,7 @@ BENCHMARK(BM_ManualTiming)->Range(1, 1<<17)->UseManualTime();
 
 <a name="setting-the-time-unit" />
 
-## 设置时间单位
+## 设置时间单位 {#setting-the-time-unit}
 
 如果基准测试运行几毫秒，由于输出数据默认以纳秒给出，测得的时间很难直观比较。要手动设置时间单位，可显式指定：
 
@@ -1256,7 +1256,7 @@ BENCHMARK(BM_test)->Unit(benchmark::kMillisecond);
 
 <a name="preventing-optimization" />
 
-## 防止优化
+## 防止优化 {#preventing-optimization}
 
 为防止值或表达式被编译器优化掉，可以使用 `benchmark::DoNotOptimize(...)` 与 `benchmark::ClobberMemory()` 函数。
 
@@ -1329,7 +1329,7 @@ static void BM_vector_push_back(benchmark::State& state) {
 
 <a name="custom-statistics" />
 
-## 自定义统计
+## 自定义统计 {#custom-statistics}
 
 有这些聚合值固然好，但对所有人未必够用。例如你可能想知道最大观测值——比如有真实时间方面的约束时。这很简单。下面的代码指定一个自定义统计量，由 lambda 函数定义。
 
@@ -1371,7 +1371,7 @@ BENCHMARK(BM_spin_empty)
 
 <a name="memory-usage" />
 
-## 内存用量
+## 内存用量 {#memory-usage}
 
 除 CPU 性能之外，跟踪基准测试的内存用量也常常有用。为此，benchmark 提供了 `RegisterMemoryManager` 方法，允许注入自定义的 `MemoryManager`。
 
@@ -1418,7 +1418,7 @@ int main(int argc, char** argv) {
 
 <a name="exiting-with-an-error" />
 
-## 以错误退出
+## 以错误退出 {#exiting-with-an-error}
 
 当基准测试内部发生外部影响导致的错误（如文件 I/O 与网络通信）时，可用 `State::SkipWithError(const std::string& msg)` 函数跳过该次基准测试运行并报告错误。注意：只有 `KeepRunning()` 的后续迭代会被跳过；对基准测试循环的 ranged-for 版本，用户必须显式退出循环，否则所有迭代都会执行。用户也可以显式 return，立即退出基准测试。
 
@@ -1514,7 +1514,7 @@ ranged-for 循环比 `KeepRunning` 快的原因在于：`KeepRunning` 每次迭�
 
 <a name="disabling-cpu-frequency-scaling" />
 
-## 禁用 CPU 频率调节
+## 禁用 CPU 频率调节 {#disabling-cpu-frequency-scaling}
 
 如果看到这个错误：
 

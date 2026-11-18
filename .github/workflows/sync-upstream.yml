@@ -1,0 +1,86 @@
+name: Sync Upstream
+
+# PLAN §9：每周一 UTC 02:00 检测上游 google/benchmark docs/ 变更；
+# 有变化则更新 source/ 快照 + manifest，开同步分支与 issue 供翻译批次认领。
+# 无变化静默；手动触发为常规兜底（R3）。
+
+on:
+  schedule:
+    - cron: "0 2 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Check upstream for docs changes
+        id: check
+        run: |
+          python scripts/sync_upstream.py --check | tee /tmp/sync.json
+          HAS_CHANGES=$(python3 -c "
+          import json
+          d = json.load(open('/tmp/sync.json'))
+          print('true' if d['has_changes'] else 'false')")
+          echo "has_changes=${HAS_CHANGES}" >> "$GITHUB_OUTPUT"
+          SHA=$(python3 -c "import json; print(json.load(open('/tmp/sync.json'))['commit'])")
+          echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
+        env:
+          GBZD_UPSTREAM_CACHE: /tmp/upstream-cache
+
+      - name: Apply changes and open sync branch + issue
+        if: steps.check.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GBZD_UPSTREAM_CACHE: /tmp/upstream-cache
+        run: |
+          SHA="${{ steps.check.outputs.sha }}"
+          SHORT="${SHA:0:8}"
+          BRANCH="sync/$(date +%Y%m%d)-${SHORT}"
+
+          # 应用变更：更新 source/、manifest、产出 reports/sync-*.md
+          python scripts/sync_upstream.py --apply
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add source/ manifest.yml reports/
+          git commit -m "sync: upstream snapshot @${SHA}"
+          git push origin "HEAD:refs/heads/${BRANCH}"
+
+          # 开 issue：标题按 PLAN §5.4，正文附报告摘要与认领指引
+          REPORT=$(ls reports/sync-*.md | tail -1)
+          WORKITEMS=$(python3 -c "
+          import json
+          d = json.load(open('/tmp/sync.json'))
+          parts = []
+          for f, w in d.get('workitems', {}).items():
+              parts.append(f\"- {f}: 新增 {w['added']} / 修改 {w['modified']} / 删除 {w['removed']}\")
+          print(chr(10).join(parts) if parts else '（无段落级工作项）')")
+          gh issue create \
+            --title "[upstream-sync] ${SHORT}: 同步待处理" \
+            --body "上游 commit: ${SHA}
+
+          ${WORKITEMS}
+
+          同步分支: ${BRANCH}
+          报告: ${REPORT}
+
+          认领指引: 按 PLAN §6.1 批次表执行复译；同一文件批次串行；
+          stale 修订只动变更段（批次协议见 PLAN §6.2）。"
+
+      - name: No changes — silent note
+        if: steps.check.outputs.has_changes == 'false'
+        run: echo "上游 docs/ 无变化，本轮静默结束。"
