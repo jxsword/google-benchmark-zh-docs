@@ -48,7 +48,10 @@
    bash scripts/validate_zh.sh --file {{FILE}}            # 必须 0 error
    memgate 512 python3 scripts/fix_links.py --file {{FILE}} --apply
    ```
-6. 写批次报告 `reports/batch-{{BATCH_ID}}.md`，固定字段（PLAN §6.2 第 3 条）:
+6. stale 修订收尾：front-matter 的 `upstream_hash` **与** `upstream_commit` 必须同时
+   更新为新快照值（hash=manifest `blob_sha`，commit=`source/_upstream_commit`），
+   否则 `--mark-current` 校验拒绝——两者只更新其一将无法对齐账本；
+7. 写批次报告 `reports/batch-{{BATCH_ID}}.md`，固定字段（PLAN §6.2 第 3 条）:
    - 批次范围（文件 + 段落区间）；
    - 变更段清单（本批新译段落定位）；
    - 术语新增与修订建议（未收录术语 + 建议译名 + 理由）；
