@@ -3,8 +3,9 @@
 
 移植自 fmt-zh-docs scripts/protect_untranslatable.py（2026-11-19 版），移植前过
 OOM 复盘三项审查：无死循环（re.sub 单遍替换，占位符映射规模 ≤ 内容规模）、
-无递归解析。本项目增补：缩进代码块保护（列表标记行豁免）、引用式链接定义保护、
-check 模式（validate 门禁第 3 项：占位符集合比对）。
+无递归解析。本项目增补：引用式链接定义保护、check 模式（validate 门禁第 3 项：
+占位符集合比对）、双反引号码段支持（P1-b 修复）。不设缩进代码块模式：语料实测
+零独立缩进代码块，且列表项正文续行会被误保护（P2-a 批次实测后移除）。
 
 原理：占位符 = `{{PROTECTED_<TYPE>_<hash8>}}`，hash 由被保护内容派生 ——
 source 与 zh 中相同的受保护片段会生成相同占位符，故文件级比对
@@ -45,13 +46,11 @@ PROTECTED_PATTERNS: List[Tuple[re.Pattern, str]] = [
     # 旧式 `[^`\n]+` 会把双反引号码段 ``X`` 拆开，误吞跨段文本（如 ``a`` to ``b``
     # 中的 " to "）为"行内代码"，导致还原错位与幻影码段（2026-11-19 P1-b 批次实测）
     (re.compile(r"(?<!`)(`{1,3})(?!`)[^`\n]+?(?<!`)\1(?!`)"), "INLINE_CODE"),
-    # 缩进代码块（≥4 空格连续行）；列表标记豁免在 protect() 内判定
-    (re.compile(r"(?m)^(?: {4,}[^\n]*\n?)+"), "INDENTED_CODE"),
+    # 不设 INDENTED_CODE 模式：语料实测零独立缩进代码块，且列表项正文续行
+    # （tools.md 等为 4–5 空格缩进）会被误保护为不可译代码（2026-11-19 P2-a 批次实测，
+    # 6 处正文被误标记）。若上游未来引入缩进代码，sync 按段落处理 + 抽检把关。
     (re.compile(r"(?m)^\[[^\]]+\]:\s*\S+"), "LINK_DEF"),
 ]
-
-# 缩进代码豁免判定：整块均为列表标记行 → 不是代码，保持可译
-_LIST_MARKER_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s")
 
 # 占位符提取（check 模式用）
 _PLACEHOLDER_RE = re.compile(r"\{\{PROTECTED_[A-Z_]+_[0-9a-f]{8}\}\}")
@@ -70,20 +69,6 @@ def protect(content: str) -> Tuple[str, Dict[str, str]]:
     protected = content
 
     for pattern, seg_type in PROTECTED_PATTERNS:
-        if seg_type == "INDENTED_CODE":
-
-            def _sub_indented(match: re.Match, _t: str = seg_type) -> str:
-                block = match.group(0)
-                content_lines = [ln for ln in block.split("\n") if ln.strip()]
-                if content_lines and all(_LIST_MARKER_RE.match(ln) for ln in content_lines):
-                    return block  # 列表标记行豁免：保持可译
-                ph = generate_placeholder(_t, block)
-                placeholder_map[ph] = block
-                return ph
-
-            protected = pattern.sub(_sub_indented, protected)
-            continue
-
         if seg_type == "LINK":
 
             def _sub_link(match: re.Match) -> str:

@@ -61,18 +61,18 @@ def test_image_fully_protected():
     assert restore(protected, pmap) == doc
 
 
-def test_indented_code_protected_but_list_exempt():
+def test_indented_prose_not_protected():
+    """列表项正文续行（4–5 空格缩进）不得被误保护为代码（P2-a 实测回归）。
+
+    tools.md 的编号列表续行是正文；语料实测零独立缩进代码块，故不设
+    INDENTED_CODE 模式。"""
     doc = (
-        "    indented code line\n"
-        "    second code line\n"
-        "\n"
-        "- item\n"
-        "    - nested item\n"
+        "1. **Benchmark:** The name of the function, along with the\n"
+        "     size of the input (after the slash).\n"
+        "2. **Time:** The average time per operation.\n"
     )
     protected, pmap = protect(doc)
-    values = "\n".join(pmap.values())
-    assert "indented code line" in values     # 缩进代码块被保护
-    assert "nested item" not in values        # 嵌套列表标记行豁免，保持可译
+    assert "size of the input" not in "".join(pmap.values())
     assert restore(protected, pmap) == doc
 
 

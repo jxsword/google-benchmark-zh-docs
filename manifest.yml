@@ -77,7 +77,7 @@ files:
 - file: tools.md
   blob_sha: 411f41d405ffc8c4bf513c50f1396e160a6fe254
   size: 19213
-  status: missing
+  status: current
   zh: zh/tools.md
   paragraphs: 68
   updated_at: '2026-11-19'
