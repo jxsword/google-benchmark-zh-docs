@@ -1,0 +1,6 @@
+# google-benchmark-zh-docs 站点构建依赖
+
+# 站点构建（mkdocs Material，决策 DR-003）
+mkdocs>=1.6
+mkdocs-material>=9.5
+pymdown-extensions>=10.0

@@ -1,0 +1,55 @@
+# google-benchmark-zh-docs gitignore
+
+# Build outputs
+site/
+
+# Workdir：agent 批次工作区 + 上游克隆缓存（不入库）
+workdir/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.env
+.venv/
+
+# Test / coverage
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ZCode 工具状态
+.mimosa/
+
+# Translation memory / state（如引入 sqlite 记忆库）
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# LLM API keys (never commit)
+*.key
+*.secret

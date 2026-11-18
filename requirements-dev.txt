@@ -1,0 +1,5 @@
+# google-benchmark-zh-docs 脚本与测试依赖（sync / validate / fix_links 等）
+
+markdown-it-py>=3.0     # 段落级 AST 解析（sync 段 diff / validate 结构对等）
+PyYAML>=6.0             # manifest.yml 与译文 front-matter 解析
+pytest>=7.4             # tests/ 单元测试
