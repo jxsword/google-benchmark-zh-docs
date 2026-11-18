@@ -83,6 +83,17 @@ def test_link_def_protected():
     assert restore(protected, pmap) == doc
 
 
+def test_check_ignores_url_tokens_mapped_by_fix_links():
+    """../ 跨目录链接经 fix_links 映射为绝对 URL 后，URL 占位符不参与比对。
+
+    回归：URL 内容哈希随映射改变，占位符比对若不排除 URL 类 token 会与
+    validate 第 4 项（链接归一比对）互相矛盾（2026-11-19 P3 批次实测）。"""
+    src = "See [User Counters](../README.md#custom-counters) and `keep()`.\n"
+    zh = "参见[用户计数器](https://github.com/google/benchmark/blob/main/README.md#custom-counters)与 `keep()`。\n"
+    ok, detail = check_placeholders(src, zh)
+    assert ok, detail
+
+
 def test_check_placeholders_gate():
     src = "Use `foo()` and [link](https://example.com/a) here.\n"
     ok, detail = check_placeholders(src, src)

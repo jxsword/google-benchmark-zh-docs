@@ -7,21 +7,21 @@ files:
 - file: AssemblyTests.md
   blob_sha: 89df7ca520df857b43ff401a06463e14c06cb3d7
   size: 5324
-  status: missing
+  status: current
   zh: zh/AssemblyTests.md
   paragraphs: 30
   updated_at: '2026-11-19'
 - file: bazel.md
   blob_sha: b5217a97e85bcdc2991b05d27f9e20a30443cf83
   size: 2623
-  status: missing
+  status: current
   zh: zh/bazel.md
   paragraphs: 23
   updated_at: '2026-11-19'
 - file: dependencies.md
   blob_sha: fdb7f19b2fe1719d8b48cbbb84d35384bce45725
   size: 933
-  status: missing
+  status: current
   zh: zh/dependencies.md
   paragraphs: 7
   updated_at: '2026-11-19'
@@ -35,28 +35,28 @@ files:
 - file: perf_counters.md
   blob_sha: f342092c99704c58cea9658e3f1cd9d7bf0b74dc
   size: 1567
-  status: missing
+  status: current
   zh: zh/perf_counters.md
   paragraphs: 9
   updated_at: '2026-11-19'
 - file: platform_specific_build_instructions.md
   blob_sha: 675fd6bdf8c857c1999f946ff91233120b91dd3e
   size: 700
-  status: missing
+  status: current
   zh: zh/platform_specific_build_instructions.md
   paragraphs: 5
   updated_at: '2026-11-19'
 - file: python_bindings.md
   blob_sha: 718d1079ff64bb2111cd5d63e1a997fa1b98f7ff
   size: 1464
-  status: missing
+  status: current
   zh: zh/python_bindings.md
   paragraphs: 8
   updated_at: '2026-11-19'
 - file: random_interleaving.md
   blob_sha: c083036841480796c0565ffa36c7e02bd32e06b2
   size: 647
-  status: missing
+  status: current
   zh: zh/random_interleaving.md
   paragraphs: 4
   updated_at: '2026-11-19'
@@ -70,7 +70,7 @@ files:
 - file: releasing.md
   blob_sha: b8ea84a0b92f2d5dec833fa3a52ba4564d80b612
   size: 1475
-  status: missing
+  status: current
   zh: zh/releasing.md
   paragraphs: 8
   updated_at: '2026-11-19'

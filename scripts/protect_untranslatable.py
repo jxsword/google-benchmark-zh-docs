@@ -117,12 +117,21 @@ def check_placeholders(source_text: str, zh_text: str) -> Tuple[bool, Dict[str, 
       占位符多重集比对，不再二次 protect（二次 protect 会把 `[文本]({{占位符}})`
       重新包一层，产生假差异）。
     zh 相对 source：缺失 = 误删受保护内容；多余 = 译文自造占位符。
-    返回 (ok, {"missing": [...], "extra": [...]})。"""
+    返回 (ok, {"missing": [...], "extra": [...]})。
+
+    URL 类占位符（PROTECTED_URL_*）不参与本比对：跨目录链接经 fix_links 映射为
+    上游 GitHub 绝对 URL 是合法变换，URL 内容哈希必然改变；链接目标的语义校验
+    由 validate_zh 第 4 项（目标归一多重集比对）独占负责，此处重复约束会互相矛盾
+    （2026-11-19 P3 批次实测）。"""
     src_counter = placeholder_multiset(protect(source_text)[0])
     if _PLACEHOLDER_RE.search(zh_text):
         zh_counter = placeholder_multiset(zh_text)
     else:
         zh_counter = placeholder_multiset(protect(zh_text)[0])
+    src_counter = Counter({k: v for k, v in src_counter.items()
+                           if not k.startswith("{{PROTECTED_URL_")})
+    zh_counter = Counter({k: v for k, v in zh_counter.items()
+                          if not k.startswith("{{PROTECTED_URL_")})
     missing = sorted((src_counter - zh_counter).elements())
     extra = sorted((zh_counter - src_counter).elements())
     ok = not missing and not extra
