@@ -82,3 +82,17 @@ def test_check_placeholders_gate():
                "{{PROTECTED_CODE_BLOCK_00000000}}\n"
     ok, detail = check_placeholders(src, invented)
     assert not ok and detail["extra"]
+
+
+def test_check_placeholders_protected_intermediate():
+    """受保护中间产物（译文含占位符字面量）按字面比对，不二次 protect。
+
+    回归：`[文本]({{PROTECTED_URL_xxx}})` 若被二次 protect，链接模式会把
+    占位符重新包一层产生假差异（2026-11-19 P1-a 批次实测发现）。"""
+    src = "See [the guide](user_guide.md) and `flags`.\n"
+    protected, pmap = protect(src)
+    assert "[the guide]({{" in protected and "{{PROTECTED_INLINE_CODE_" in protected
+    translated = protected.replace("[the guide]", "[用户指南]")
+    ok, detail = check_placeholders(src, translated)
+    assert ok, detail
+    assert detail == {"missing": [], "extra": []}

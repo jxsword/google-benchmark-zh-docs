@@ -188,10 +188,14 @@ def typography_warnings(body: str) -> List[str]:
 
 
 def glossary_forbidden(glossary_path: Path, body_stripped: str) -> List[str]:
-    """§7 第 5 项：glossary「禁用译名」列在正文（代码外）零出现。"""
+    """§7 第 5 项：glossary「禁用译名」列在正文（代码外）零出现。
+
+    扫描前先剔除统一译名列的 CJK 片段（≥3 字）：合法译名可能内含禁用子串
+    （如「真实时间」含「实时」），先抹掉合法词再比对禁用词，避免子串误报。"""
     if not glossary_path.exists():
         return []
     forbidden: List[str] = []
+    allowed: List[str] = []
     for raw in glossary_path.read_text(encoding="utf-8").split("\n"):
         line = raw.strip()
         if not (line.startswith("|") and line.endswith("|")):
@@ -201,13 +205,18 @@ def glossary_forbidden(glossary_path: Path, body_stripped: str) -> List[str]:
             continue
         if cells[0].startswith("-"):
             continue
+        for frag in re.findall(r"[\u4e00-\u9fff]{3,}", cells[1]):
+            allowed.append(frag)
         for term in cells[2].split("、"):
             term = re.sub(r"（[^）]*）", "", term).strip()
             if term and term not in ("—", "— （", ""):
                 forbidden.append(term)
+    body = body_stripped
+    for frag in sorted(set(allowed), key=len, reverse=True):
+        body = body.replace(frag, "\u25a1")
     hits = []
     for term in sorted(set(forbidden)):
-        if term in body_stripped:
+        if term in body:
             hits.append(term)
     return hits
 

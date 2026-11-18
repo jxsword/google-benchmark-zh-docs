@@ -10,7 +10,7 @@
 |---|---|---|---|
 | benchmark / microbenchmark | 基准测试 / 微基准测试 | 跑分 | 函数 `Benchmark()` 与类名不译 |
 | state（`benchmark::State`） | 迭代状态 | 状态机、状态对象 | 类名不译 |
-| iteration | 迭代 | 循环（指迭代次数时） | 控制台输出列 `iterations` 不译 |
+| iteration | 迭代 | — | 控制台输出列 `iterations` 不译；「循环」仅禁用于迭代次数语境（机器不扫，抽检把关），Loop 译「循环」正确 |
 | repetition | 重复 | 复制、重复执行 | 输出列 `repetitions` 不译 |
 | fixture | （不译） | 夹具、测试夹具、脚手架 | 对齐 Google Test 社区习惯 |
 | reporter | reporter（类名）/ 报告器（泛指） | 汇报器、报告员 | `BenchmarkReporter` 等类名不译 |

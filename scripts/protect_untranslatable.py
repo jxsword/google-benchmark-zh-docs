@@ -120,15 +120,21 @@ def placeholder_multiset(text: str) -> Counter:
 
 
 def check_placeholders(source_text: str, zh_text: str) -> Tuple[bool, Dict[str, List[str]]]:
-    """占位符多重集比对（validate 门禁第 3 项）。
+    """占位符多重集比对（validate 门禁第 3 项 + 批次中间产物校验）。
 
-    两边都重新过 protect 再比对：zh 是还原后的正文，相同的受保护片段
-    （代码块/行内代码/HTML/链接 URL 等）会派生出相同占位符 —— 链接文本已译
-    不影响（LINK 只对 URL 生成占位符）。
+    source 一侧始终重新 protect 派生占位符。zh 一侧分两种形态：
+    - 已还原终稿（不含占位符字面量）：重新过 protect，相同受保护片段派生相同
+      占位符（链接文本已译不影响 —— LINK 只对 URL 生成占位符）；
+    - 受保护中间产物（zh 内含占位符字面量，如批次翻译的译文稿）：直接按字面
+      占位符多重集比对，不再二次 protect（二次 protect 会把 `[文本]({{占位符}})`
+      重新包一层，产生假差异）。
     zh 相对 source：缺失 = 误删受保护内容；多余 = 译文自造占位符。
     返回 (ok, {"missing": [...], "extra": [...]})。"""
     src_counter = placeholder_multiset(protect(source_text)[0])
-    zh_counter = placeholder_multiset(protect(zh_text)[0])
+    if _PLACEHOLDER_RE.search(zh_text):
+        zh_counter = placeholder_multiset(zh_text)
+    else:
+        zh_counter = placeholder_multiset(protect(zh_text)[0])
     missing = sorted((src_counter - zh_counter).elements())
     extra = sorted((zh_counter - src_counter).elements())
     ok = not missing and not extra
@@ -194,8 +200,11 @@ def main(argv=None):
     elif args.mode == "restore":
         if not (args.file and args.map):
             parser.error("restore 模式需要 <file> 与 --map")
-        restored = restore(_read(args.file),
-                           json.loads(_read(args.map)))
+        loaded = json.loads(_read(args.map))
+        # 兼容 --mode protect 的完整输出（{"protected": ..., "map": {...}}）
+        if isinstance(loaded, dict) and set(loaded.keys()) == {"protected", "map"}:
+            loaded = loaded["map"]
+        restored = restore(_read(args.file), loaded)
         if args.out:
             Path(args.out).write_text(restored, encoding="utf-8")
         else:
