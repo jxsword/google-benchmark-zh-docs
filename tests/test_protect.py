@@ -26,6 +26,26 @@ def test_nested_protection_restore_order():
     assert restore(protected, pmap) == doc
 
 
+def test_double_backtick_code_span():
+    """CommonMark 双反引号码段必须整体保护，不吞噬跨段文本。
+
+    回归：user_guide.md L1197-1198 ``BM_UserCounter`` to ``BM_Factorial``
+    旧正则把 " to " 等跨段文本误配为行内代码（2026-11-19 P1-b 批次实测）。"""
+    doc = "changes from ``BM_UserCounter`` to ``BM_Factorial`` here.\n"
+    protected, pmap = protect(doc)
+    assert "``BM_UserCounter``" in pmap.values()
+    assert "``BM_Factorial``" in pmap.values()
+    assert " to " not in pmap.values()
+    assert restore(protected, pmap) == doc
+
+
+def test_single_backtick_still_works():
+    doc = "use `--benchmark_filter` and `x` plus `y` now\n"
+    protected, pmap = protect(doc)
+    assert restore(protected, pmap) == doc
+    assert pmap and all(v.startswith("`") for v in pmap.values())
+
+
 def test_link_url_only_protected():
     doc = "See [the user guide](user_guide.md) for details.\n"
     protected, pmap = protect(doc)

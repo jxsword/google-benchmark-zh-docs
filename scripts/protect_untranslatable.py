@@ -41,7 +41,10 @@ PROTECTED_PATTERNS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r"<[^>]+>"), "HTML_TAG"),
     (re.compile(r"!\[[^\]]*\]\([^)]+\)"), "IMAGE"),
     (re.compile(r"\[([^\]]+)\]\(([^)]+)\)"), "LINK"),    # 只保护 URL，链接文本可译
-    (re.compile(r"`[^`\n]+`"), "INLINE_CODE"),
+    # 行内代码：1–3 个反引号游程开闭配对（CommonMark 代码跨度）。
+    # 旧式 `[^`\n]+` 会把双反引号码段 ``X`` 拆开，误吞跨段文本（如 ``a`` to ``b``
+    # 中的 " to "）为"行内代码"，导致还原错位与幻影码段（2026-11-19 P1-b 批次实测）
+    (re.compile(r"(?<!`)(`{1,3})(?!`)[^`\n]+?(?<!`)\1(?!`)"), "INLINE_CODE"),
     # 缩进代码块（≥4 空格连续行）；列表标记豁免在 protect() 内判定
     (re.compile(r"(?m)^(?: {4,}[^\n]*\n?)+"), "INDENTED_CODE"),
     (re.compile(r"(?m)^\[[^\]]+\]:\s*\S+"), "LINK_DEF"),

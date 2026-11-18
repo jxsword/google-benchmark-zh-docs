@@ -505,12 +505,10 @@ BENCHMARK(BM_func)->Arg(1)->Arg(3)->Threads(16)->Threads(32)->Setup(DoSetup)->Te
  - BM_func_Arg_3_Threads_16, BM_func_Arg_3_Threads_32
 
 <a name="passing-arguments" />
-## Passing Arguments
 
-Sometimes a family of benchmarks can be implemented with just one routine that
-takes an extra argument to specify which one of the family of benchmarks to
-run. For example, the following code defines a family of benchmarks for
-measuring the speed of `memcpy()` calls of different lengths:
+## 传递参数
+
+有时一个 benchmark 族可以用单个例程实现：该例程接受一个额外参数，用于指定要运行该族中的哪个基准测试。例如，下面的代码定义了一个 benchmark 族，用于测量不同长度的 `memcpy()` 调用速度：
 
 ```c++
 static void BM_memcpy(benchmark::State& state) {
@@ -527,27 +525,21 @@ static void BM_memcpy(benchmark::State& state) {
 BENCHMARK(BM_memcpy)->Arg(8)->Arg(64)->Arg(512)->Arg(4<<10)->Arg(8<<10);
 ```
 
-The preceding code is quite repetitive, and can be replaced with the following
-short-hand. The following invocation will pick a few appropriate arguments in
-the specified range and will generate a benchmark for each such argument.
+上面的代码相当重复，可以用下面的简写形式替代。下面的调用会在指定范围内选取若干合适的参数，并为每个这样的参数生成一个基准测试。
 
 ```c++
 BENCHMARK(BM_memcpy)->Range(8, 8<<10);
 ```
 
-By default the arguments in the range are generated in multiples of eight and
-the command above selects [ 8, 64, 512, 4k, 8k ]. In the following code the
-range multiplier is changed to multiples of two.
+默认情况下，范围内的参数按 8 的倍数生成，上面的命令选取 [ 8, 64, 512, 4k, 8k ]。下面的代码把范围乘数改为 2 的倍数。
 
 ```c++
 BENCHMARK(BM_memcpy)->RangeMultiplier(2)->Range(8, 8<<10);
 ```
 
-Now arguments generated are [ 8, 16, 32, 64, 128, 256, 512, 1024, 2k, 4k, 8k ].
+此时生成的参数为 [ 8, 16, 32, 64, 128, 256, 512, 1024, 2k, 4k, 8k ]。
 
-The preceding code shows a method of defining a sparse range.  The following
-example shows a method of defining a dense range. It is then used to benchmark
-the performance of `std::vector` initialization for uniformly increasing sizes.
+上面的代码展示了定义稀疏范围的方法。下面的示例展示定义稠密范围的方法，然后用它对不同尺寸均匀递增时 `std::vector` 的初始化性能进行基准测试。
 
 ```c++
 static void BM_DenseRange(benchmark::State& state) {
@@ -561,11 +553,9 @@ static void BM_DenseRange(benchmark::State& state) {
 BENCHMARK(BM_DenseRange)->DenseRange(0, 1024, 128);
 ```
 
-Now arguments generated are [ 0, 128, 256, 384, 512, 640, 768, 896, 1024 ].
+此时生成的参数为 [ 0, 128, 256, 384, 512, 640, 768, 896, 1024 ]。
 
-You might have a benchmark that depends on two or more inputs. For example, the
-following code defines a family of benchmarks for measuring the speed of set
-insertion.
+基准测试可能依赖两个或更多输入。例如，下面的代码定义了一个 benchmark 族，用于测量集合插入的速度。
 
 ```c++
 static void BM_SetInsert(benchmark::State& state) {
@@ -589,10 +579,7 @@ BENCHMARK(BM_SetInsert)
     ->Args({8<<10, 512});
 ```
 
-The preceding code is quite repetitive, and can be replaced with the following
-short-hand. The following macro will pick a few appropriate arguments in the
-product of the two specified ranges and will generate a benchmark for each such
-pair.
+上面的代码相当重复，可以用下面的简写形式替代。下面的宏会在两个指定范围的乘积中选取若干合适的参数，并为每个这样的参数对生成一个基准测试。
 
 <!-- {% raw %} -->
 ```c++
@@ -600,9 +587,7 @@ BENCHMARK(BM_SetInsert)->Ranges({{1<<10, 8<<10}, {128, 512}});
 ```
 <!-- {% endraw %} -->
 
-Some benchmarks may require specific argument values that cannot be expressed
-with `Ranges`. In this case, `ArgsProduct` offers the ability to generate a
-benchmark input for each combination in the product of the supplied vectors.
+某些基准测试可能需要 `Ranges` 无法表达的特定参数值。此时，`ArgsProduct` 可以为所提供向量的乘积中的每个组合生成一个基准测试输入。
 
 <!-- {% raw %} -->
 ```c++
@@ -625,8 +610,7 @@ BENCHMARK(BM_SetInsert)
 ```
 <!-- {% endraw %} -->
 
-For the most common scenarios, helper methods for creating a list of
-integers for a given sparse or dense range are provided.
+针对最常见场景，本库提供了为给定稀疏或稠密范围创建整数列表的辅助方法。
 
 ```c++
 BENCHMARK(BM_SetInsert)
@@ -642,10 +626,7 @@ BENCHMARK(BM_SetInsert)
     });
 ```
 
-For more complex patterns of inputs, passing a custom function to `Apply` allows
-programmatic specification of an arbitrary set of arguments on which to run the
-benchmark. The following example enumerates a dense range on one parameter,
-and a sparse range on the second.
+对于更复杂的输入模式，向 `Apply` 传入自定义函数，即可通过编程方式指定运行基准测试的任意参数集合。下面的示例在第一个参数上枚举稠密范围，在第二个参数上枚举稀疏范围。
 
 ```c++
 static void CustomArguments(benchmark::Benchmark* b) {
@@ -656,21 +637,17 @@ static void CustomArguments(benchmark::Benchmark* b) {
 BENCHMARK(BM_SetInsert)->Apply(CustomArguments);
 ```
 
-### Naming Benchmark Arguments
+### 为基准测试参数命名
 
-When a benchmark takes one or more numeric arguments, the generated benchmark
-names can be made easier to read by naming those arguments. Use `ArgName` for a
-single argument and `ArgNames` for multiple arguments.
+当基准测试接受一个或多个数值参数时，为这些参数命名可以让生成的基准测试名称更易读。单参数用 `ArgName`，多参数用 `ArgNames`。
 
 ```c++
 BENCHMARK(BM_memcpy)->Range(8, 512)->ArgName("bytes");
 ```
 
-This changes names such as `BM_memcpy/8` and `BM_memcpy/512` to
-`BM_memcpy/bytes:8` and `BM_memcpy/bytes:512`.
+这会把 `BM_memcpy/8` 与 `BM_memcpy/512` 之类的名称变为 `BM_memcpy/bytes:8` 与 `BM_memcpy/bytes:512`。
 
-For benchmarks with more than one argument, each name labels the corresponding
-argument position.
+对有多于一个参数的基准测试，每个名称标注对应的参数位置。
 
 <!-- {% raw %} -->
 ```c++
@@ -681,19 +658,11 @@ BENCHMARK(BM_SetInsert)
 ```
 <!-- {% endraw %} -->
 
-This produces names such as `BM_SetInsert/size:100/inserts:128` and
-`BM_SetInsert/size:200/inserts:512`. Empty argument names are allowed and leave
-that argument value unlabeled, for example `ArgNames({"size", ""})` produces
-names like `BM_SetInsert/size:100/128`.
+这会生成诸如 `BM_SetInsert/size:100/inserts:128` 与 `BM_SetInsert/size:200/inserts:512` 的名称。允许空参数名——此时该参数值不带标签，例如 `ArgNames({"size", ""})` 会生成 `BM_SetInsert/size:100/128` 之类的名称。
 
-### Passing Arbitrary Arguments to a Benchmark
+### 向基准测试传递任意参数
 
-It is possible to define a benchmark that takes an arbitrary number
-of extra arguments. The `BENCHMARK_CAPTURE(func, test_case_name, ...args)`
-macro creates a benchmark that invokes `func`  with the `benchmark::State` as
-the first argument followed by the specified `args...`.
-The `test_case_name` is appended to the name of the benchmark and
-should describe the values passed.
+可以定义接受任意数量额外参数的基准测试。`BENCHMARK_CAPTURE(func, test_case_name, ...args)` 宏创建一个基准测试，它调用 `func`，以 `benchmark::State` 作为第一个参数，后接指定的 `args...`。`test_case_name` 会被附加到基准测试名称之后，应描述所传入的值。
 
 ```c++
 template <class ...Args>
@@ -714,16 +683,11 @@ BENCHMARK_CAPTURE(BM_takes_args, int_string_test, 42, std::string("abc"));
 BENCHMARK_CAPTURE(BM_takes_args, int_test, 42, 43);
 ```
 
-Note that elements of `...args` may refer to global variables. Users should
-avoid modifying global state inside of a benchmark.
+注意 `...args` 的元素可以引用全局变量。用户应避免在基准测试内部修改全局状态。
 
-### Naming a Benchmark Without Capturing Arguments
+### 在不捕获参数的情况下为基准测试命名
 
-If you only need to give a benchmark a custom name (without passing extra
-arguments), use `BENCHMARK_NAMED(func, test_case_name)`. Unlike
-`BENCHMARK_CAPTURE`, this macro does not create a lambda, which avoids
-compiler and linker scalability issues when registering thousands of
-benchmarks.
+如果只需要给基准测试一个自定义名称（不传额外参数），请使用 `BENCHMARK_NAMED(func, test_case_name)`。与 `BENCHMARK_CAPTURE` 不同，该宏不会创建 lambda，从而在注册数千个基准测试时避免编译器与链接器的可扩展性问题。
 
 ```c++
 void BM_Foo(benchmark::State& state) {
@@ -733,16 +697,13 @@ void BM_Foo(benchmark::State& state) {
 BENCHMARK_NAMED(BM_Foo, my_variant);
 ```
 
-Use `BENCHMARK_CAPTURE` when you need to pass extra arguments; use
-`BENCHMARK_NAMED` when you only need the name.
+需要传额外参数时使用 `BENCHMARK_CAPTURE`；只需要名称时使用 `BENCHMARK_NAMED`。
 
 <a name="asymptotic-complexity" />
 
-## Calculating Asymptotic Complexity (Big O)
+## 计算渐进复杂度（big-O）
 
-Asymptotic complexity might be calculated for a family of benchmarks. The
-following code will calculate the coefficient for the high-order term in the
-running time and the normalized root-mean square error of string comparison.
+可以为 benchmark 族计算渐进复杂度。下面的代码将计算运行时间最高阶项的系数，以及字符串比较的归一化均方根误差。
 
 ```c++
 static void BM_StringCompare(benchmark::State& state) {
@@ -758,46 +719,39 @@ BENCHMARK(BM_StringCompare)
     ->RangeMultiplier(2)->Range(1<<10, 1<<18)->Complexity(benchmark::oN);
 ```
 
-As shown in the following invocation, asymptotic complexity might also be
-calculated automatically.
+如下面的调用所示，渐进复杂度也可以自动计算。
 
 ```c++
 BENCHMARK(BM_StringCompare)
     ->RangeMultiplier(2)->Range(1<<10, 1<<18)->Complexity();
 ```
 
-The following code will specify asymptotic complexity with a lambda function,
-that might be used to customize high-order term calculation.
+下面的代码通过 lambda 函数指定渐进复杂度，可用于自定义最高阶项的计算。
 
 ```c++
 BENCHMARK(BM_StringCompare)->RangeMultiplier(2)
     ->Range(1<<10, 1<<18)->Complexity([](benchmark::ComplexityN n)->double{return n; });
 ```
 
-The `BigO` row reports the coefficient in the same time unit as the rest of the
-family, so a family declared with `->Unit(benchmark::kMicrosecond)` reports its
-coefficient in microseconds. The `RMS` row is a normalized quantity and is
-reported as a percentage, independent of the time unit.
+`BigO` 行以与该族其余部分相同的时间单位报告系数，因此以 `->Unit(benchmark::kMicrosecond)` 声明的族以微秒报告系数。`RMS` 行是归一化量，以百分比报告，与时间单位无关。
 
 <a name="custom-benchmark-name" />
 
-## Custom Benchmark Name
+## 自定义基准测试名称
 
-You can change the benchmark's name as follows:
+可以按如下方式更改基准测试的名称：
 
 ```c++
 BENCHMARK(BM_memcpy)->Name("memcpy")->RangeMultiplier(2)->Range(8, 8<<10);
 ```
 
-The invocation will execute the benchmark as before using `BM_memcpy` but changes
-the prefix in the report to `memcpy`.
+该调用会照旧使用 `BM_memcpy` 执行基准测试，但把报告中的前缀更改为 `memcpy`。
 
 <a name="templated-benchmarks" />
 
-## Templated Benchmarks
+## 模板基准测试
 
-This example produces and consumes messages of size `sizeof(v)` `range_x`
-times. It also outputs throughput in the absence of multiprogramming.
+本示例产生并消费大小为 `sizeof(v)`、共 `range_x` 次的消息。它还会在无多道程序设计的情况下输出吞吐量。
 
 ```c++
 template <class Q> void BM_Sequential(benchmark::State& state) {
@@ -822,7 +776,7 @@ BENCHMARK_TEMPLATE(BM_Sequential, WaitQueue<int>)->Range(1<<0, 1<<10);
 
 ```
 
-Three macros are provided for adding benchmark templates.
+提供三个宏用于添加基准测试模板。
 
 ```c++
 #define BENCHMARK(func<...>) // Takes any number of parameters.
@@ -832,9 +786,9 @@ Three macros are provided for adding benchmark templates.
 
 <a name="templated-benchmarks-with-arguments" />
 
-## Templated Benchmarks that take arguments
+## 接受参数的模板基准测试
 
-Sometimes there is a need to template benchmarks, and provide arguments to them.
+有时需要对基准测试模板化并向其提供参数。
 
 ```c++
 template <class Q> void BM_Sequential_With_Step(benchmark::State& state, int step) {
@@ -858,15 +812,13 @@ BENCHMARK_TEMPLATE1_CAPTURE(BM_Sequential, WaitQueue<int>, Step1, 1)->Range(1<<0
 
 ## Fixtures
 
-Fixture tests are created by first defining a type that derives from
-`::benchmark::Fixture` and then creating/registering the tests using the
-following macros:
+fixture 测试的创建方式：先定义一个派生自 `::benchmark::Fixture` 的类型，然后用以下宏创建并注册测试：
 
 * `BENCHMARK_F(ClassName, Method)`
 * `BENCHMARK_DEFINE_F(ClassName, Method)`
 * `BENCHMARK_REGISTER_F(ClassName, Method)`
 
-For Example:
+例如：
 
 ```c++
 class MyFixture : public benchmark::Fixture {
@@ -896,14 +848,14 @@ BENCHMARK_REGISTER_F(MyFixture, BarTest)->Threads(2);
 // `BarTest` is now registered.
 ```
 
-### Templated Fixtures
+### 模板化 Fixtures
 
-Also you can create templated fixture by using the following macros:
+也可以用以下宏创建模板化 fixture：
 
 * `BENCHMARK_TEMPLATE_F(ClassName, Method, ...)`
 * `BENCHMARK_TEMPLATE_DEFINE_F(ClassName, Method, ...)`
 
-For example:
+例如：
 
 ```c++
 template<typename T>
@@ -927,14 +879,12 @@ BENCHMARK_REGISTER_F(MyFixture, DoubleTest)->Threads(2);
 // `DoubleTest` is now registered.
 ```
 
-If you want to use a method template for your fixtures,
-which you instantiate afterward, use the following macros:
+如果想为 fixture 使用方法模板、并在之后实例化它们，请使用以下宏：
 
 * `BENCHMARK_TEMPLATE_METHOD_F(ClassName, Method)`
 * `BENCHMARK_TEMPLATE_INSTANTIATE_F(ClassName, Method, ...)`
 
-With these macros you can define one method for several instantiations.
-Example (using `MyFixture` from above):
+借助这些宏，可以为多个实例化定义同一个方法。示例（使用上面的 `MyFixture`）：
 
 ```c++
 // Defines `Test` using the class template `MyFixture`.
@@ -950,14 +900,9 @@ BENCHMARK_TEMPLATE_INSTANTIATE_F(MyFixture, Test, int)->Threads(2);
 BENCHMARK_TEMPLATE_INSTANTIATE_F(MyFixture, Test, double)->Threads(4);
 ```
 
-Inside the method definition of `BENCHMARK_TEMPLATE_METHOD_F` the type `Base` refers
-to the type of the instantiated fixture.
-Accesses to members of the fixture must be prefixed by `this->`.
+在 `BENCHMARK_TEMPLATE_METHOD_F` 的方法定义内部，类型 `Base` 指代实例化 fixture 的类型；访问 fixture 成员必须加 `this->` 前缀。
 
-`BENCHMARK_TEMPLATE_METHOD_F`and `BENCHMARK_TEMPLATE_INSTANTIATE_F` can only be used,
-if the fixture does not use non-type template parameters.
-If you want to pass values as template parameters, use e.g. `std::integral_constant`.
-For example:
+`BENCHMARK_TEMPLATE_METHOD_F` 与 `BENCHMARK_TEMPLATE_INSTANTIATE_F` 仅当 fixture 未使用非类型模板参数时才能使用。若想把值作为模板参数传递，可使用例如 `std::integral_constant`。例如：
 
 ```c++
 template<typename Sz>
@@ -977,10 +922,9 @@ BENCHMARK_TEMPLATE_INSTANTIATE_F(SizedFixture, Test, std::integral_constant<5>)-
 
 <a name="custom-counters" />
 
-## Custom Counters
+## 自定义计数器
 
-You can add your own counters with user-defined names. The example below
-will add columns "Foo", "Bar" and "Baz" in its output:
+可以添加自定义名称的计数器。下面的示例会在其输出中添加 "Foo"、"Bar" 和 "Baz" 列：
 
 ```c++
 static void UserCountersExample1(benchmark::State& state) {
@@ -994,17 +938,9 @@ static void UserCountersExample1(benchmark::State& state) {
 }
 ```
 
-The `state.counters` object is a `std::map` with `std::string` keys
-and `Counter` values. The latter is a `double`-like class, via an implicit
-conversion to `double&`. Thus you can use all of the standard arithmetic
-assignment operators (`=,+=,-=,*=,/=`) to change the value of each counter.
+`state.counters` 对象是一个 `std::map`，以 `std::string` 为键、`Counter` 为值。后者是一个类似 `double` 的类，经由到 `double&` 的隐式转换。因此可以使用全部标准算术赋值运算符（`=,+=,-=,*=,/=`）修改每个计数器的值。
 
-The `Counter` constructor accepts three parameters: the value as a `double`
-; a bit flag which allows you to show counters as rates, and/or as per-thread
-iteration, and/or as per-thread averages, and/or iteration invariants,
-and/or finally inverting the result; and a flag specifying the 'unit' - i.e.
-is 1k a 1000 (default, `benchmark::Counter::OneK::kIs1000`), or 1024
-(`benchmark::Counter::OneK::kIs1024`)?
+`Counter` 构造函数接受三个参数：以 `double` 给出的值；一个位标志，用于把计数器显示为速率、每线程迭代、每线程平均值、迭代不变量中的若干项，以及最终反转结果；还有一个指定“单位”的标志——即 1k 表示 1000（默认，`benchmark::Counter::OneK::kIs1000`）还是 1024（`benchmark::Counter::OneK::kIs1024`）？
 
 ```c++
   // sets a simple counter
@@ -1037,7 +973,7 @@ is 1k a 1000 (default, `benchmark::Counter::OneK::kIs1000`), or 1024
   state.counters["ErrorRate"] = Counter(absError, benchmark::Counter::kStringifyExponent | benchmark::Counter::kIsRate);
 ```
 
-You can use `insert()` with `std::initializer_list`:
+可以把 `insert()` 与 `std::initializer_list` 结合使用：
 
 <!-- {% raw %} -->
 ```c++
@@ -1049,17 +985,11 @@ You can use `insert()` with `std::initializer_list`:
 ```
 <!-- {% endraw %} -->
 
-In multithreaded benchmarks, each counter is set on the calling thread only.
-When the benchmark finishes, the counters from each thread will be summed.
-Counters that are configured with `kIsRate`, will report the average rate across all threads, while `kAvgThreadsRate` counters will report the average rate per thread.
+在多线程基准测试中，每个计数器只在调用线程上设置。基准测试结束时，来自各线程的计数器会被求和。配置了 `kIsRate` 的计数器将报告所有线程的平均速率，而 `kAvgThreadsRate` 计数器将报告每线程的平均速率。
 
-### Counter Reporting
+### 计数器报告
 
-When using the console reporter, by default, user counters are printed at
-the end after the table, the same way as ``bytes_processed`` and
-``items_processed``. This is best for cases in which there are few counters,
-or where there are only a couple of lines per benchmark. Here's an example of
-the default output:
+使用 console 报告器时，默认情况下用户计数器打印在表格之后的末尾，方式与 ``bytes_processed`` 与 ``items_processed`` 相同。这最适合计数器较少、或每个基准测试只有几行的情形。下面是默认输出的示例：
 
 ```
 ------------------------------------------------------------------------------
@@ -1081,13 +1011,7 @@ BM_CalculatePiRange/64         609 ns        609 ns    1140647 3.15746
 BM_CalculatePiRange/512       4900 ns       4901 ns     142696 3.14355
 ```
 
-If this doesn't suit you, you can print each counter as a table column by
-passing the flag `--benchmark_counters_tabular=true` to the benchmark
-application. This is best for cases in which there are a lot of counters, or
-a lot of lines per individual benchmark. Note that this will trigger a
-reprinting of the table header any time the counter set changes between
-individual benchmarks. Here's an example of corresponding output when
-`--benchmark_counters_tabular=true` is passed:
+如果这不符合需求，可以通过向基准测试应用程序传入 flag `--benchmark_counters_tabular=true`，把每个计数器打印为表格的一列。这最适合计数器很多、或单个基准测试行数很多的情形。注意：每当计数器集合在各个基准测试之间发生变化，都会触发重新打印表头。传入 `--benchmark_counters_tabular=true` 时的对应输出示例如下：
 
 ```
 ---------------------------------------------------------------------------------------
@@ -1117,9 +1041,7 @@ BM_CalculatePiRange/1024k  9721140 ns    9721413 ns         71 3.14159
 BM_CalculatePi/threads:8      2255 ns       9943 ns      70936
 ```
 
-Note above the additional header printed when the benchmark changes from
-``BM_UserCounter`` to ``BM_Factorial``. This is because ``BM_Factorial`` does
-not have the same counter set as ``BM_UserCounter``.
+注意上面当基准测试从 ``BM_UserCounter`` 变为 ``BM_Factorial`` 时额外打印的表头——因为 ``BM_Factorial`` 不具有与 ``BM_UserCounter`` 相同的计数器集合。
 
 <a name="multithreaded-benchmarks"/>
 
